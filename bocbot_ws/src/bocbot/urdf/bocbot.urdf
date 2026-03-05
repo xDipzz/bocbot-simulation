@@ -8,12 +8,10 @@
   <gazebo>
     <plugin filename="libgazebo_ros_diff_drive.so" name="skid_steer_drive_controller">
       <ros>
-        <namespace>/bocbot</namespace>
-        <remapping>~/cmd_vel:=cmd_vel</remapping>
-        <remapping>~/odom:=odom</remapping>
+        <!-- Removed namespace and remappings to use global /cmd_vel -->
       </ros>
       <update_rate>100.0</update_rate>
-      <!-- We have 3 pairs of wheels now! -->
+      <!-- 3 pairs of wheels -->
       <num_wheel_pairs>3</num_wheel_pairs>
       <odometry_frame>odom</odometry_frame>
       <!-- Left Wheels -->
@@ -24,11 +22,11 @@
       <right_joint>front_right_wheel_joint</right_joint>
       <right_joint>mid_right_wheel_joint</right_joint>
       <right_joint>back_right_wheel_joint</right_joint>
-      <!-- Distances adjusted to match new geometry (y offsets) -->
-      <wheel_separation>1.14</wheel_separation>
+      <!-- Wheel separation and diameter for the scaled model -->
+      <wheel_separation>1.16</wheel_separation>
       <wheel_diameter>0.45</wheel_diameter>
       <robot_base_frame>robot_footprint</robot_base_frame>
-      <max_wheel_torque>50</max_wheel_torque>
+      <max_wheel_torque>5000</max_wheel_torque>
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
       <publish_wheel_tf>true</publish_wheel_tf>
@@ -51,14 +49,6 @@
           <near>0.02</near>
           <far>300</far>
         </clip>
-        <distortion>
-          <k1>0.0</k1>
-          <k2>0.0</k2>
-          <k3>0.0</k3>
-          <p1>0.0</p1>
-          <p2>0.0</p2>
-          <center>0.5 0.5</center>
-        </distortion>
       </camera>
       <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
         <ros>
@@ -92,11 +82,6 @@
           <max>30.0</max>
           <resolution>0.01</resolution>
         </range>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.01</stddev>
-        </noise>
       </ray>
       <plugin filename="libgazebo_ros_ray_sensor.so" name="gazebo_ros_head_hokuyo_controller">
         <ros>
@@ -114,6 +99,48 @@
       <always_on>true</always_on>
       <update_rate>100</update_rate>
       <visualize>true</visualize>
+      <imu>
+        <angular_velocity>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+            </noise>
+          </z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+            </noise>
+          </z>
+        </linear_acceleration>
+      </imu>
       <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <ros>
           <namespace>/bocbot</namespace>
@@ -123,510 +150,399 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!-- ======================================================== -->
-  <!-- ROBOTIC MECHANICS & KINEMATICS UPGRADE                   -->
-  <!-- ======================================================== -->
   <link name="robot_footprint"/>
   <joint name="robot_footprint_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.0 0.0 0.45"/>
+    <!-- GIANT SCALE SPAWN: 1.5m in the air to allow the monster wheels to unfold -->
+    <origin rpy="0 0 0" xyz="0 0 1.5"/>
     <parent link="robot_footprint"/>
     <child link="base_link"/>
   </joint>
-  <!-- Main Chassis -->
+  <!-- ======================================================== -->
+  <!-- MAIN CHASSIS - 5X SCALE (1.5m Length)                    -->
+  <!-- ======================================================== -->
   <link name="base_link">
     <inertial>
-      <mass value="4.0"/>
-      <!-- ADVANCED MECHANICS: Lowering the Center of Mass (CoM). 
-           By shifting the Z origin of the inertia down by 5cm (-0.05), 
-           we simulate a heavy battery pack mounted at the very bottom 
-           of the hull. This mathematically increases the tip-over angle,
-           making it exceptionally stable on steep stairs. -->
-      <origin rpy=" 0 0 0" xyz="0.0 0.0 -0.15"/>
-      <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.05"/>
+      <mass value="50.0"/>
+      <!-- Heavy underbelly battery simulation -->
+      <origin rpy=" 0 0 0" xyz="0 0 -0.2"/>
+      <inertia ixx="5.0" ixy="0" ixz="0" iyy="8.0" iyz="0" izz="10.0"/>
     </inertial>
     <collision name="collision">
-      <origin rpy=" 0 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <box size="0.84 0.54 0.3"/>
+        <box size="1.2 0.8 0.4"/>
       </geometry>
     </collision>
     <visual name="chassis_visual">
-      <origin rpy=" 0 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy=" 0 0 0" xyz="0 0 0"/>
       <geometry>
-        <box size="0.9 0.6 0.36"/>
+        <box size="1.5 1.0 0.6"/>
       </geometry>
     </visual>
   </link>
   <gazebo reference="base_link">
     <material>Gazebo/Green</material>
   </gazebo>
-  <!-- IMU Sensor Link (New System Component) -->
   <link name="imu_link">
     <inertial>
-      <mass value="0.001"/>
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
       <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
     </inertial>
   </link>
   <joint name="imu_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+    <origin xyz="0 0 0"/>
     <parent link="base_link"/>
     <child link="imu_link"/>
   </joint>
-  <!-- Camera -->
   <link name="camera">
-    <visual name="camera_visual">
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+    <visual>
+      <origin xyz="0 0 0"/>
       <geometry>
-        <box size="0.09 0.15 0.09"/>
+        <box size="0.1 0.2 0.1"/>
       </geometry>
     </visual>
   </link>
   <joint name="camera_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.45 0.0 0.0"/>
+    <origin xyz="0.75 0 0"/>
     <child link="camera"/>
     <parent link="base_link"/>
   </joint>
   <gazebo reference="camera">
     <material>Gazebo/Black</material>
   </gazebo>
-  <!-- Hokuyo LiDAR -->
   <link name="hokuyo">
-    <visual name="hokuyo_visual">
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+    <visual>
+      <origin xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.04" radius="0.03"/>
+        <cylinder length="0.15" radius="0.1"/>
       </geometry>
     </visual>
   </link>
   <joint name="hokuyo_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.3 0.0 0.18"/>
+    <origin xyz="0.5 0 0.35"/>
     <child link="hokuyo"/>
     <parent link="base_link"/>
   </joint>
   <gazebo reference="hokuyo">
     <material>Gazebo/Black</material>
   </gazebo>
-  <!-- ======================================================== -->
-  <!-- MACROS FOR CLEAN CODE (Professional Robotics Standard)   -->
-  <!-- ======================================================== -->
   <!-- =============================== -->
   <!-- LEFT SIDE ASSEMBLY              -->
   <!-- =============================== -->
   <link name="left_rocker_arm">
     <inertial>
-      <mass value="0.5"/>
-      <origin rpy="0 0 0" xyz="0.15 0.0 0.0"/>
-      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
+      <mass value="5.0"/>
+      <origin rpy="0 0 0" xyz="0.25 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.5" iyz="0" izz="0.5"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0.15 0.0 0.0"/>
+      <origin xyz="0.25 0 0"/>
       <geometry>
-        <box size="1.02 0.12 0.12"/>
+        <box size="1.7 0.2 0.2"/>
       </geometry>
     </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="0.6 0.0 -0.15"/>
-      <geometry>
-        <box size="0.12 0.12 0.3"/>
-      </geometry>
-    </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="-0.3 0.0 -0.075"/>
-      <geometry>
-        <box size="0.12 0.12 0.15"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0.15 0.0 -0.075"/>
-      <geometry>
-        <box size="0.9 0.06 0.15"/>
-      </geometry>
-    </collision>
   </link>
   <gazebo reference="left_rocker_arm">
     <material>Gazebo/DarkGrey</material>
   </gazebo>
   <joint name="left_differential_axle" type="revolute">
-    <origin rpy="0 0 0" xyz="0.0 0.39 0.0"/>
+    <origin rpy="0 0 0" xyz="0.0 0.65 0"/>
     <parent link="base_link"/>
     <child link="left_rocker_arm"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <!-- ADVANCED MECHANICS: Mechanical Hard Stops.
-         Changed from continuous back to revolute, but with strictly tuned limits 
-         (+/- 0.6 radians). This simulates the physical chassis bumping against 
-         the arm, preventing the robot from doing a full backflip over its own wheels. -->
-    <limit effort="1000" lower="-0.6" upper="0.6" velocity="10"/>
-    <dynamics damping="8.0" friction="2.0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10000" lower="-0.6" upper="0.6" velocity="5"/>
+    <dynamics damping="100.0" friction="50.0"/>
   </joint>
   <link name="front_left_wheel">
     <inertial>
-      <mass value="0.8"/>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022"/>
+      <mass value="5.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
+      <!-- Proportional inertia for large cylinder -->
+      <inertia ixx="0.2" ixy="0" ixz="0" iyy="0.2" iyz="0" izz="0.35"/>
     </inertial>
     <visual>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </collision>
   </link>
   <gazebo reference="front_left_wheel">
     <material>Gazebo/Grey</material>
-    <!-- ADVANCED MECHANICS: Anisotropic Friction.
-           In a 6-wheel skid steer, the wheels MUST slip sideways to turn.
-           mu1 (forward friction) is high (1.2) for stair climbing grip.
-           mu2 (lateral friction) is extremely low (0.1) so the robot
-           can easily rotate on its center axis without fighting itself! -->
-    <mu1>1.2</mu1>
-    <mu2>0.1</mu2>
+    <!-- Optimized for massive rover turning -->
+    <mu1>1.5</mu1>
+    <mu2>0.02</mu2>
+    <!-- Almost zero lateral friction to allow easy pivot -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
   </gazebo>
   <joint name="front_left_wheel_joint" type="continuous">
-    <origin rpy="0 0 0" xyz="1.8 0.54 -0.9"/>
+    <origin rpy="0 0 0" xyz="1.0 0.2 -0.5"/>
     <parent link="left_rocker_arm"/>
     <child link="front_left_wheel"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.5"/>
   </joint>
   <link name="left_bogie_link">
     <inertial>
-      <mass value="0.5"/>
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
+      <mass value="4.0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.3" iyz="0" izz="0.3"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <origin xyz="0 0 0"/>
       <geometry>
-        <box size="0.72 0.12 0.12"/>
+        <box size="1.2 0.2 0.2"/>
       </geometry>
     </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="0.3 0.0 -0.075"/>
-      <geometry>
-        <box size="0.12 0.12 0.15"/>
-      </geometry>
-    </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="-0.3 0.0 -0.075"/>
-      <geometry>
-        <box size="0.12 0.12 0.15"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0.0 0.0 -0.075"/>
-      <geometry>
-        <box size="0.6 0.06 0.15"/>
-      </geometry>
-    </collision>
   </link>
   <gazebo reference="left_bogie_link">
     <material>Gazebo/DarkGrey</material>
   </gazebo>
   <joint name="left_bogie_pivot" type="revolute">
-    <origin rpy="0 0 0" xyz="-0.3 0.0 -0.15"/>
+    <origin rpy="0 0 0" xyz="-0.5 0 -0.2"/>
     <parent link="left_rocker_arm"/>
     <child link="left_bogie_link"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <!-- Mechanical stop for the bogie (+/- 0.8 radians) -->
-    <limit effort="500" lower="-0.8" upper="0.8" velocity="10"/>
-    <dynamics damping="3.0" friction="1.0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="5000" lower="-0.8" upper="0.8" velocity="5"/>
+    <dynamics damping="50.0" friction="20.0"/>
   </joint>
   <link name="mid_left_wheel">
     <inertial>
-      <mass value="0.8"/>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022"/>
+      <mass value="5.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
+      <!-- Proportional inertia for large cylinder -->
+      <inertia ixx="0.2" ixy="0" ixz="0" iyy="0.2" iyz="0" izz="0.35"/>
     </inertial>
     <visual>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </collision>
   </link>
   <gazebo reference="mid_left_wheel">
     <material>Gazebo/Grey</material>
-    <!-- ADVANCED MECHANICS: Anisotropic Friction.
-           In a 6-wheel skid steer, the wheels MUST slip sideways to turn.
-           mu1 (forward friction) is high (1.2) for stair climbing grip.
-           mu2 (lateral friction) is extremely low (0.1) so the robot
-           can easily rotate on its center axis without fighting itself! -->
-    <mu1>1.2</mu1>
-    <mu2>0.1</mu2>
+    <!-- Optimized for massive rover turning -->
+    <mu1>1.5</mu1>
+    <mu2>0.02</mu2>
+    <!-- Almost zero lateral friction to allow easy pivot -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
   </gazebo>
   <joint name="mid_left_wheel_joint" type="continuous">
-    <origin rpy="0 0 0" xyz="0.9 0.54 -0.45"/>
+    <origin rpy="0 0 0" xyz="0.5 0.2 -0.3"/>
     <parent link="left_bogie_link"/>
     <child link="mid_left_wheel"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.5"/>
   </joint>
   <link name="back_left_wheel">
     <inertial>
-      <mass value="0.8"/>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022"/>
+      <mass value="5.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
+      <!-- Proportional inertia for large cylinder -->
+      <inertia ixx="0.2" ixy="0" ixz="0" iyy="0.2" iyz="0" izz="0.35"/>
     </inertial>
     <visual>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </collision>
   </link>
   <gazebo reference="back_left_wheel">
     <material>Gazebo/Grey</material>
-    <!-- ADVANCED MECHANICS: Anisotropic Friction.
-           In a 6-wheel skid steer, the wheels MUST slip sideways to turn.
-           mu1 (forward friction) is high (1.2) for stair climbing grip.
-           mu2 (lateral friction) is extremely low (0.1) so the robot
-           can easily rotate on its center axis without fighting itself! -->
-    <mu1>1.2</mu1>
-    <mu2>0.1</mu2>
+    <!-- Optimized for massive rover turning -->
+    <mu1>1.5</mu1>
+    <mu2>0.02</mu2>
+    <!-- Almost zero lateral friction to allow easy pivot -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
   </gazebo>
   <joint name="back_left_wheel_joint" type="continuous">
-    <origin rpy="0 0 0" xyz="-0.9 0.54 -0.45"/>
+    <origin rpy="0 0 0" xyz="-0.5 0.2 -0.3"/>
     <parent link="left_bogie_link"/>
     <child link="back_left_wheel"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.5"/>
   </joint>
   <!-- =============================== -->
   <!-- RIGHT SIDE ASSEMBLY             -->
   <!-- =============================== -->
   <link name="right_rocker_arm">
     <inertial>
-      <mass value="0.5"/>
-      <origin rpy="0 0 0" xyz="0.15 0.0 0.0"/>
-      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
+      <mass value="5.0"/>
+      <origin rpy="0 0 0" xyz="0.25 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.5" iyz="0" izz="0.5"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0.15 0.0 0.0"/>
+      <origin xyz="0.25 0 0"/>
       <geometry>
-        <box size="1.02 0.12 0.12"/>
+        <box size="1.7 0.2 0.2"/>
       </geometry>
     </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="0.6 0.0 -0.15"/>
-      <geometry>
-        <box size="0.12 0.12 0.3"/>
-      </geometry>
-    </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="-0.3 0.0 -0.075"/>
-      <geometry>
-        <box size="0.12 0.12 0.15"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0.15 0.0 -0.075"/>
-      <geometry>
-        <box size="0.9 0.06 0.15"/>
-      </geometry>
-    </collision>
   </link>
   <gazebo reference="right_rocker_arm">
     <material>Gazebo/DarkGrey</material>
   </gazebo>
   <joint name="right_differential_axle" type="revolute">
-    <origin rpy="0 0 0" xyz="0.0 -0.39 0.0"/>
+    <origin rpy="0 0 0" xyz="0.0 -0.65 0"/>
     <parent link="base_link"/>
     <child link="right_rocker_arm"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="1000" lower="-0.6" upper="0.6" velocity="10"/>
-    <dynamics damping="8.0" friction="2.0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="10000" lower="-0.6" upper="0.6" velocity="5"/>
+    <dynamics damping="100.0" friction="50.0"/>
   </joint>
   <link name="front_right_wheel">
     <inertial>
-      <mass value="0.8"/>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022"/>
+      <mass value="5.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
+      <!-- Proportional inertia for large cylinder -->
+      <inertia ixx="0.2" ixy="0" ixz="0" iyy="0.2" iyz="0" izz="0.35"/>
     </inertial>
     <visual>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </collision>
   </link>
   <gazebo reference="front_right_wheel">
     <material>Gazebo/Grey</material>
-    <!-- ADVANCED MECHANICS: Anisotropic Friction.
-           In a 6-wheel skid steer, the wheels MUST slip sideways to turn.
-           mu1 (forward friction) is high (1.2) for stair climbing grip.
-           mu2 (lateral friction) is extremely low (0.1) so the robot
-           can easily rotate on its center axis without fighting itself! -->
-    <mu1>1.2</mu1>
-    <mu2>0.1</mu2>
+    <!-- Optimized for massive rover turning -->
+    <mu1>1.5</mu1>
+    <mu2>0.02</mu2>
+    <!-- Almost zero lateral friction to allow easy pivot -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
   </gazebo>
   <joint name="front_right_wheel_joint" type="continuous">
-    <origin rpy="0 0 0" xyz="1.8 -0.54 -0.9"/>
+    <origin rpy="0 0 0" xyz="1.0 -0.2 -0.5"/>
     <parent link="right_rocker_arm"/>
     <child link="front_right_wheel"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.5"/>
   </joint>
   <link name="right_bogie_link">
     <inertial>
-      <mass value="0.5"/>
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
+      <mass value="4.0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.3" iyz="0" izz="0.3"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <origin xyz="0 0 0"/>
       <geometry>
-        <box size="0.72 0.12 0.12"/>
+        <box size="1.2 0.2 0.2"/>
       </geometry>
     </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="0.3 0.0 -0.075"/>
-      <geometry>
-        <box size="0.12 0.12 0.15"/>
-      </geometry>
-    </visual>
-    <visual>
-      <origin rpy="0 0 0" xyz="-0.3 0.0 -0.075"/>
-      <geometry>
-        <box size="0.12 0.12 0.15"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0.0 0.0 -0.075"/>
-      <geometry>
-        <box size="0.6 0.06 0.15"/>
-      </geometry>
-    </collision>
   </link>
   <gazebo reference="right_bogie_link">
     <material>Gazebo/DarkGrey</material>
   </gazebo>
   <joint name="right_bogie_pivot" type="revolute">
-    <origin rpy="0 0 0" xyz="-0.3 0.0 -0.15"/>
+    <origin rpy="0 0 0" xyz="-0.5 0 -0.2"/>
     <parent link="right_rocker_arm"/>
     <child link="right_bogie_link"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="500" lower="-0.8" upper="0.8" velocity="10"/>
-    <dynamics damping="3.0" friction="1.0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="5000" lower="-0.8" upper="0.8" velocity="5"/>
+    <dynamics damping="50.0" friction="20.0"/>
   </joint>
   <link name="mid_right_wheel">
     <inertial>
-      <mass value="0.8"/>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022"/>
+      <mass value="5.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
+      <!-- Proportional inertia for large cylinder -->
+      <inertia ixx="0.2" ixy="0" ixz="0" iyy="0.2" iyz="0" izz="0.35"/>
     </inertial>
     <visual>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </collision>
   </link>
   <gazebo reference="mid_right_wheel">
     <material>Gazebo/Grey</material>
-    <!-- ADVANCED MECHANICS: Anisotropic Friction.
-           In a 6-wheel skid steer, the wheels MUST slip sideways to turn.
-           mu1 (forward friction) is high (1.2) for stair climbing grip.
-           mu2 (lateral friction) is extremely low (0.1) so the robot
-           can easily rotate on its center axis without fighting itself! -->
-    <mu1>1.2</mu1>
-    <mu2>0.1</mu2>
+    <!-- Optimized for massive rover turning -->
+    <mu1>1.5</mu1>
+    <mu2>0.02</mu2>
+    <!-- Almost zero lateral friction to allow easy pivot -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
   </gazebo>
   <joint name="mid_right_wheel_joint" type="continuous">
-    <origin rpy="0 0 0" xyz="0.9 -0.54 -0.45"/>
+    <origin rpy="0 0 0" xyz="0.5 -0.2 -0.3"/>
     <parent link="right_bogie_link"/>
     <child link="mid_right_wheel"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.5"/>
   </joint>
   <link name="back_right_wheel">
     <inertial>
-      <mass value="0.8"/>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022"/>
+      <mass value="5.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
+      <!-- Proportional inertia for large cylinder -->
+      <inertia ixx="0.2" ixy="0" ixz="0" iyy="0.2" iyz="0" izz="0.35"/>
     </inertial>
     <visual>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </visual>
     <collision>
-      <origin rpy="1.5707 0 0" xyz="0.0 0.0 0.0"/>
+      <origin rpy="1.570796 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.075"/>
+        <cylinder length="0.2" radius="0.375"/>
       </geometry>
     </collision>
   </link>
   <gazebo reference="back_right_wheel">
     <material>Gazebo/Grey</material>
-    <!-- ADVANCED MECHANICS: Anisotropic Friction.
-           In a 6-wheel skid steer, the wheels MUST slip sideways to turn.
-           mu1 (forward friction) is high (1.2) for stair climbing grip.
-           mu2 (lateral friction) is extremely low (0.1) so the robot
-           can easily rotate on its center axis without fighting itself! -->
-    <mu1>1.2</mu1>
-    <mu2>0.1</mu2>
+    <!-- Optimized for massive rover turning -->
+    <mu1>1.5</mu1>
+    <mu2>0.02</mu2>
+    <!-- Almost zero lateral friction to allow easy pivot -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
   </gazebo>
   <joint name="back_right_wheel_joint" type="continuous">
-    <origin rpy="0 0 0" xyz="-0.9 -0.54 -0.45"/>
+    <origin rpy="0 0 0" xyz="-0.5 -0.2 -0.3"/>
     <parent link="right_bogie_link"/>
     <child link="back_right_wheel"/>
-    <axis xyz="0.0 3.0 0.0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.5"/>
   </joint>
 </robot>

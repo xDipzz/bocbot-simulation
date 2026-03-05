@@ -15,6 +15,7 @@
       <direction>-0.3 0.3 -1.0</direction>
     </light>
     
+    <!-- Outer ground plane (outside the building) -->
     <model name='ground_plane'>
       <static>1</static>
       <link name='link'>
@@ -25,7 +26,7 @@
         <visual name='visual'>
           <cast_shadows>0</cast_shadows>
           <geometry><plane><normal>0 0 1</normal><size>200 200</size></plane></geometry>
-          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Asphalt</name></script></material>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
         </visual>
       </link>
     </model>
@@ -36,344 +37,95 @@
       <real_time_update_rate>1000</real_time_update_rate>
     </physics>
 
-    <model name='mega_office_complex'>
+    <!-- Large Office Complex -->
+    <model name='office_complex'>
       <static>1</static>
       <pose>0 0 0 0 0 0</pose>
       
-      
+      <!-- Visual Floor: Tile/Concrete Look -->
       <link name='office_floor'>
-        <pose>0 0 0.005 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>30 30 0.01</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>30 30 0.01</size></box></geometry><material><script><name>Gazebo/CeilingTiled</name></script></material></visual>
+        <pose>0 8.5 0.005 0 0 0</pose>
+        <visual name='vis'>
+          <geometry><box><size>20 13 0.01</size></box></geometry>
+          <material><script><name>Gazebo/CeilingTiled</name></script></material>
+        </visual>
       </link>
+
+      <!-- ================= OUTER WALLS ================= -->
+      <!-- Adjusted South walls to leave a door opening at X=0, Y=2.0 -->
+      <link name='wall_s_l'>
+        <pose>-5.75 2.0 1.5 0 0 0</pose>
+        <collision name='col'><geometry><box><size>8.5 0.2 3.0</size></box></geometry></collision>
+        <visual name='vis'><geometry><box><size>8.5 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
+      </link>
+      <link name='wall_s_r'>
+        <pose>5.75 2.0 1.5 0 0 0</pose>
+        <collision name='col'><geometry><box><size>8.5 0.2 3.0</size></box></geometry></collision>
+        <visual name='vis'><geometry><box><size>8.5 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
+      </link>
+      <!-- Door Header (Top of the entrance) -->
+      <link name='door_header'>
+        <pose>0 2.0 2.5 0 0 0</pose>
+        <collision name='col'><geometry><box><size>3.0 0.2 1.0</size></box></geometry></collision>
+        <visual name='vis'><geometry><box><size>3.0 0.2 1.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
+      </link>
+
       <link name='wall_n'>
-        <pose>0 15 1.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>30 0.2 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>30 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
-      </link>
-      <link name='wall_s'>
-        <pose>0 -15 1.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>30 0.2 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>30 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
-      </link>
-      <link name='wall_e'>
-        <pose>15 0 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>30 0.2 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>30 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
+        <pose>0 15.0 1.5 0 0 0</pose>
+        <collision name='col'><geometry><box><size>20 0.2 3.0</size></box></geometry></collision>
+        <visual name='vis'><geometry><box><size>20 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
       </link>
       <link name='wall_w'>
-        <pose>-15 0 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>30 0.2 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>30 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
+        <pose>-10.0 8.5 1.5 0 0 1.5708</pose>
+        <collision name='col'><geometry><box><size>13 0.2 3.0</size></box></geometry></collision>
+        <visual name='vis'><geometry><box><size>13 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
       </link>
-      <link name='wall_h1_l'>
-        <pose>-9 5 1.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>12 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>12 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_h1_r'>
-        <pose>9 5 1.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>12 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>12 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_h2_l'>
-        <pose>-9 -5 1.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>12 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>12 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_h2_r'>
-        <pose>9 -5 1.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>12 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>12 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v1_t'>
-        <pose>-3 10 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>10 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>10 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v1_m1'>
-        <pose>-3 3 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>4 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>4 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v1_m2'>
-        <pose>-3 -3 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>4 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>4 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v1_b'>
-        <pose>-3 -10 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>10 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>10 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v2_t'>
-        <pose>3 10 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>10 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>10 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v2_m1'>
-        <pose>3 3 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>4 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>4 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v2_m2'>
-        <pose>3 -3 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>4 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>4 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='wall_v2_b'>
-        <pose>3 -10 1.5 0 0 1.5708</pose>
-        <collision name='col'><geometry><box><size>10 0.4 3.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>10 0.4 3.0</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual>
-      </link>
-      <link name='grand_step_0'>
-        <pose>0 7.25 0.06 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.12</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.12</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='grand_step_1'>
-        <pose>0 7.75 0.12 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.24</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.24</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual>
-      </link>
-      <link name='grand_step_2'>
-        <pose>0 8.25 0.18 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.36</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.36</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='grand_step_3'>
-        <pose>0 8.75 0.24 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.48</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.48</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual>
-      </link>
-      <link name='grand_step_4'>
-        <pose>0 9.25 0.3 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.6</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.6</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='grand_step_5'>
-        <pose>0 9.75 0.36 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.72</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.72</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual>
-      </link>
-      <link name='grand_step_6'>
-        <pose>0 10.25 0.42 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.84</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.84</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='grand_step_7'>
-        <pose>0 10.75 0.48 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 0.5 0.96</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 0.5 0.96</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual>
-      </link>
-      <link name='grand_platform'>
-        <pose>0 12.9 0.48 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>5.6 3.8000000000000007 0.96</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>5.6 3.8000000000000007 0.96</size></box></geometry><material><script><name>Gazebo/WoodFloor</name></script></material></visual>
-      </link>
-      <link name='server_0_0'>
-        <pose>-12 7 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_0_1'>
-        <pose>-12 9 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_0_2'>
-        <pose>-12 11 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_0_3'>
-        <pose>-12 13 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_1_0'>
-        <pose>-9 7 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_1_1'>
-        <pose>-9 9 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_1_2'>
-        <pose>-9 11 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_1_3'>
-        <pose>-9 13 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_2_0'>
-        <pose>-6 7 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_2_1'>
-        <pose>-6 9 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_2_2'>
-        <pose>-6 11 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='server_2_3'>
-        <pose>-6 13 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.2 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.2 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual>
-      </link>
-      <link name='cubicle_div_1'>
-        <pose>-9 0 0.6 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>10 0.2 1.2</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>10 0.2 1.2</size></box></geometry><material><script><name>Gazebo/PaintedWall</name></script></material></visual>
-      </link>
-      <link name='desk_lm_-1_-1'>
-        <pose>-12 -2.5 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.6 0.8 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.6 0.8 0.8</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='desk_lm_-1_0'>
-        <pose>-9 -2.5 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.6 0.8 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.6 0.8 0.8</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='desk_lm_-1_1'>
-        <pose>-6 -2.5 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.6 0.8 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.6 0.8 0.8</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='desk_lm_1_-1'>
-        <pose>-12 2.5 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.6 0.8 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.6 0.8 0.8</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='desk_lm_1_0'>
-        <pose>-9 2.5 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.6 0.8 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.6 0.8 0.8</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='desk_lm_1_1'>
-        <pose>-6 2.5 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.6 0.8 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.6 0.8 0.8</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='lounge_table_1'>
-        <pose>-9 -10 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>3.0 3.0 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>3.0 3.0 0.8</size></box></geometry><material><script><name>Gazebo/WoodFloor</name></script></material></visual>
-      </link>
-      <link name='stool_0'>
-        <pose>-7.5 -8.5 0.25 0 0 0.0</pose>
-        <collision name='col'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry></collision>
-        <visual name='vis'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
-      </link>
-      <link name='stool_1'>
-        <pose>-10.5 -8.5 0.25 0 0 0.0</pose>
-        <collision name='col'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry></collision>
-        <visual name='vis'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
-      </link>
-      <link name='stool_2'>
-        <pose>-7.5 -11.5 0.25 0 0 0.0</pose>
-        <collision name='col'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry></collision>
-        <visual name='vis'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
-      </link>
-      <link name='stool_3'>
-        <pose>-10.5 -11.5 0.25 0 0 0.0</pose>
-        <collision name='col'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry></collision>
-        <visual name='vis'><geometry><cylinder><radius>0.3</radius><length>0.5</length></cylinder></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
-      </link>
-      <link name='test_ramp'>
-        <pose>9 10 0.5 0.2 0 0</pose>
-        <collision name='col'><geometry><box><size>4 6 0.2</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>4 6 0.2</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
+      <link name='wall_e'>
+        <pose>10.0 8.5 1.5 0 0 1.5708</pose>
+        <collision name='col'><geometry><box><size>13 0.2 3.0</size></box></geometry></collision>
+        <visual name='vis'><geometry><box><size>13 0.2 3.0</size></box></geometry><material><script><name>Gazebo/White</name></script></material></visual>
       </link>
 
-      <link name='test_platform'>
-        <pose>9 13.5 0.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>4 2 1.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>4 2 1.0</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='pallet_1'>
-        <pose>6 6 0.1 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.2 1.2 0.2</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.2 1.2 0.2</size></box></geometry><material><script><name>Gazebo/WoodPallet</name></script></material></visual>
-      </link>
-      <link name='pallet_2'>
-        <pose>12 7 0.15 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.2 1.2 0.3</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.2 1.2 0.3</size></box></geometry><material><script><name>Gazebo/WoodPallet</name></script></material></visual>
-      </link>
-      <link name='pallet_3'>
-        <pose>7 12 0.1 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.2 1.2 0.2</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.2 1.2 0.2</size></box></geometry><material><script><name>Gazebo/WoodPallet</name></script></material></visual>
-      </link>
-      <link name='file_cab_0'>
-        <pose>13 -3.0 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.0 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.0 2.0</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='file_cab_1'>
-        <pose>13 -1.5 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.0 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.0 2.0</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='file_cab_2'>
-        <pose>13 0.0 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.0 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.0 2.0</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='file_cab_3'>
-        <pose>13 1.5 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.0 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.0 2.0</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='file_cab_4'>
-        <pose>13 3.0 1.0 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.8 1.0 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.8 1.0 2.0</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual>
-      </link>
-      <link name='storage_box_0'>
-        <pose>6 -3 0.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.5 1.5 1.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.5 1.5 1.0</size></box></geometry><material><script><name>Gazebo/WoodPallet</name></script></material></visual>
-      </link>
-      <link name='storage_box_1'>
-        <pose>6 -1 0.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.5 1.5 1.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.5 1.5 1.0</size></box></geometry><material><script><name>Gazebo/WoodPallet</name></script></material></visual>
-      </link>
-      <link name='storage_box_2'>
-        <pose>6 1 0.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>1.5 1.5 1.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>1.5 1.5 1.0</size></box></geometry><material><script><name>Gazebo/WoodPallet</name></script></material></visual>
-      </link>
-      <link name='conf_table'>
-        <pose>9 -10 0.4 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>6.0 2.0 0.8</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>6.0 2.0 0.8</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual>
-      </link>
-      <link name='tv_screen_1'>
-        <pose>14.8 -10 1.5 0 0 0.0</pose>
-        <collision name='col'><geometry><box><size>0.1 4.0 2.0</size></box></geometry></collision>
-        <visual name='vis'><geometry><box><size>0.1 4.0 2.0</size></box></geometry><material><script><name>Gazebo/FlatBlack</name></script></material></visual>
-      </link>
+      <!-- ================= INNER WALLS ================= -->
+      <link name='wall_cl_1'><pose>-2.0 2.75 0.75 0 0 1.5708</pose><collision name='col'><geometry><box><size>1.5 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.5 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+      <link name='wall_cl_2'><pose>-2.0 6.5 0.75 0 0 1.5708</pose><collision name='col'><geometry><box><size>3.0 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>3.0 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+      <link name='wall_cl_3'><pose>-2.0 10.25 0.75 0 0 1.5708</pose><collision name='col'><geometry><box><size>1.5 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.5 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+
+      <link name='wall_cr_1'><pose>2.0 2.75 0.75 0 0 1.5708</pose><collision name='col'><geometry><box><size>1.5 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.5 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+      <link name='wall_cr_2'><pose>2.0 6.5 0.75 0 0 1.5708</pose><collision name='col'><geometry><box><size>3.0 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>3.0 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+      <link name='wall_cr_3'><pose>2.0 10.25 0.75 0 0 1.5708</pose><collision name='col'><geometry><box><size>1.5 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.5 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+
+      <!-- Dividers -->
+      <link name='wall_div_l'><pose>-6.0 6.5 0.75 0 0 0</pose><collision name='col'><geometry><box><size>8.0 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>8.0 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+      <link name='wall_div_r'><pose>6.0 6.5 0.75 0 0 0</pose><collision name='col'><geometry><box><size>8.0 0.2 1.5</size></box></geometry></collision><visual name='vis'><geometry><box><size>8.0 0.2 1.5</size></box></geometry><material><script><name>Gazebo/Bricks</name></script></material></visual></link>
+
+      <!-- ================= FURNITURE ================= -->
+      <link name='desk_1'><pose>-6.0 4.0 0.375 0 0 0</pose><collision name='col'><geometry><box><size>1.6 0.8 0.75</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.6 0.8 0.75</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+      <link name='desk_2'><pose>6.0 4.0 0.375 0 0 0</pose><collision name='col'><geometry><box><size>1.6 0.8 0.75</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.6 0.8 0.75</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+      <link name='desk_3'><pose>-6.0 9.0 0.375 0 0 0</pose><collision name='col'><geometry><box><size>1.6 0.8 0.75</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.6 0.8 0.75</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+      <link name='desk_4'><pose>6.0 9.0 0.375 0 0 0</pose><collision name='col'><geometry><box><size>1.6 0.8 0.75</size></box></geometry></collision><visual name='vis'><geometry><box><size>1.6 0.8 0.75</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+
+      <link name='cab_1'><pose>-9.5 3.0 0.9 0 0 0</pose><collision name='col'><geometry><box><size>0.8 1.5 1.8</size></box></geometry></collision><visual name='vis'><geometry><box><size>0.8 1.5 1.8</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual></link>
+      <link name='cab_2'><pose>9.5 8.0 0.9 0 0 0</pose><collision name='col'><geometry><box><size>0.8 1.5 1.8</size></box></geometry></collision><visual name='vis'><geometry><box><size>0.8 1.5 1.8</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual></link>
+
+      <link name='server_1'><pose>-8.0 14.0 1.0 0 0 0</pose><collision name='col'><geometry><box><size>0.8 1.0 2.0</size></box></geometry></collision><visual name='vis'><geometry><box><size>0.8 1.0 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual></link>
+      <link name='server_2'><pose>-6.0 14.0 1.0 0 0 0</pose><collision name='col'><geometry><box><size>0.8 1.0 2.0</size></box></geometry></collision><visual name='vis'><geometry><box><size>0.8 1.0 2.0</size></box></geometry><material><script><name>Gazebo/Black</name></script></material></visual></link>
+
+      <!-- ================= MULTI-STEP STAIRCASE ================= -->
+      <link name='step_1'><pose>0 11.15 0.04 0 0 0</pose><collision name='col'><geometry><box><size>2.0 0.3 0.08</size></box></geometry></collision><visual name='vis'><geometry><box><size>2.0 0.3 0.08</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual></link>
+      <link name='step_2'><pose>0 11.45 0.08 0 0 0</pose><collision name='col'><geometry><box><size>2.0 0.3 0.16</size></box></geometry></collision><visual name='vis'><geometry><box><size>2.0 0.3 0.16</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual></link>
+      <link name='step_3'><pose>0 11.75 0.12 0 0 0</pose><collision name='col'><geometry><box><size>2.0 0.3 0.24</size></box></geometry></collision><visual name='vis'><geometry><box><size>2.0 0.3 0.24</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual></link>
+      <link name='step_4'><pose>0 12.05 0.16 0 0 0</pose><collision name='col'><geometry><box><size>2.0 0.3 0.32</size></box></geometry></collision><visual name='vis'><geometry><box><size>2.0 0.3 0.32</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual></link>
+      <link name='step_5'><pose>0 12.35 0.20 0 0 0</pose><collision name='col'><geometry><box><size>2.0 0.3 0.40</size></box></geometry></collision><visual name='vis'><geometry><box><size>2.0 0.3 0.40</size></box></geometry><material><script><name>Gazebo/Grey</name></script></material></visual></link>
+      <link name='step_6'><pose>0 12.65 0.24 0 0 0</pose><collision name='col'><geometry><box><size>2.0 0.3 0.48</size></box></geometry></collision><visual name='vis'><geometry><box><size>2.0 0.3 0.48</size></box></geometry><material><script><name>Gazebo/DarkGrey</name></script></material></visual></link>
       
+      <link name='platform'><pose>0 13.8 0.24 0 0 0</pose><collision name='col'><geometry><box><size>4.0 2.0 0.48</size></box></geometry></collision><visual name='vis'><geometry><box><size>4.0 2.0 0.48</size></box></geometry><material><script><name>Gazebo/WoodFloor</name></script></material></visual></link>
     </model>
 
-    <!-- Configure the camera view to look over the entire building from the front/top -->
+    <!-- Configure the camera view to look over the entire building from the front -->
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>0.0 -22.0 25.0 0.0 0.8 1.5708</pose>
+        <pose frame=''>0.0 -8.0 18.0 0.0 0.8 1.5708</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
