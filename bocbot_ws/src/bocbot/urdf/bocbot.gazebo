@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot>
 
-  <!--skid_steer_drive_controller-->
+  <!-- Hexapedal Rocker-Bogie Plugin Configuration -->
   <gazebo>
     <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_diff_drive.so">
       <ros>
@@ -10,21 +10,27 @@
         <remapping>~/odom:=odom</remapping>
       </ros>
       <update_rate>100.0</update_rate>
-      <num_wheel_pairs>2</num_wheel_pairs>
+      
+      <!-- We have 3 pairs of wheels now! -->
+      <num_wheel_pairs>3</num_wheel_pairs>
       <odometry_frame>odom</odometry_frame>
 
+      <!-- Left Wheels -->
       <left_joint>front_left_wheel_joint</left_joint>
+      <left_joint>mid_left_wheel_joint</left_joint>
       <left_joint>back_left_wheel_joint</left_joint>
-      <wheel_separation>0.4</wheel_separation>
-      <wheel_diameter>0.2</wheel_diameter>
-
+      
+      <!-- Right Wheels -->
       <right_joint>front_right_wheel_joint</right_joint>
+      <right_joint>mid_right_wheel_joint</right_joint>
       <right_joint>back_right_wheel_joint</right_joint>
+
+      <!-- Distances will be adjusted to match new geometry -->
       <wheel_separation>0.4</wheel_separation>
-      <wheel_diameter>0.2</wheel_diameter>
+      <wheel_diameter>0.15</wheel_diameter>
 
       <robot_base_frame>robot_footprint</robot_base_frame>
-      <max_wheel_torque>20</max_wheel_torque>
+      <max_wheel_torque>50</max_wheel_torque>
 
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
@@ -39,7 +45,6 @@
     <sensor type="camera" name="camera_sensor">
       <update_rate>30.0</update_rate>
       <always_on>1</always_on>
-
       <camera name="camera">
         <horizontal_fov>1.3962634</horizontal_fov>
         <image>
@@ -95,15 +100,10 @@
         </range>
         <noise>
           <type>gaussian</type>
-          <!-- Noise parameters based on published spec for Hokuyo laser
-                achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
-                stddev of 0.01m will put 99.7% of samples within 0.03m of the true
-                reading. -->
           <mean>0.0</mean>
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <update_rate>30</update_rate>
       <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_ray_sensor.so">
         <ros>
           <namespace>/bocbot</namespace>
