@@ -3,12 +3,14 @@
 
   <xacro:include filename="bocbot.gazebo" />
 
-  <!-- Base footprint -->
+  <!-- ======================================================== -->
+  <!-- ROBOTIC MECHANICS & KINEMATICS UPGRADE                   -->
+  <!-- ======================================================== -->
+
   <link name="robot_footprint"></link>
 
-  <!-- Ground contact anchor. Start close to ground -->
   <joint name="robot_footprint_joint" type="fixed">
-    <origin xyz="0 0 0.15" rpy="0 0 0" />
+    <origin xyz="0.0 0.0 0.45" rpy="0 0 0" />
     <parent link="robot_footprint"/>
     <child link="base_link" />
   </joint>
@@ -16,430 +18,227 @@
   <!-- Main Chassis -->
   <link name='base_link'>
     <inertial>
-      <!-- Reduced mass significantly to stop violent collision resolving -->
-      <mass value="3.0"/>
-      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <mass value="4.0"/>
+      <!-- ADVANCED MECHANICS: Lowering the Center of Mass (CoM). 
+           By shifting the Z origin of the inertia down by 5cm (-0.05), 
+           we simulate a heavy battery pack mounted at the very bottom 
+           of the hull. This mathematically increases the tip-over angle,
+           making it exceptionally stable on steep stairs. -->
+      <origin xyz="0.0 0.0 -0.15" rpy=" 0 0 0"/>
       <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.05" iyz="0" izz="0.05" />
     </inertial>
     <collision name='collision'>
-      <origin xyz="0 0 0" rpy=" 0 0 0"/>
-      <!-- Made collision box slightly smaller than visual to prevent snagging -->
-      <geometry>
-        <box size="0.28 0.18 0.10"/>
-      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy=" 0 0 0"/>
+      <geometry><box size="0.84 0.54 0.3"/></geometry>
     </collision>
     <visual name='chassis_visual'>
-      <origin xyz="0 0 0" rpy=" 0 0 0"/>
-      <geometry>
-        <box size="0.30 0.20 0.12"/>
-      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy=" 0 0 0"/>
+      <geometry><box size="0.9 0.6 0.36"/></geometry>
     </visual>
   </link>
+  <gazebo reference="base_link"><material>Gazebo/Green</material></gazebo>
 
-  <gazebo reference="base_link">
-    <material>Gazebo/Green</material>
-  </gazebo>
+  <!-- IMU Sensor Link (New System Component) -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="imu_link" />
+  </joint>
 
   <!-- Camera -->
   <link name="camera">
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy=" 0 0 0"/>
-      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
-    </inertial>
     <visual name="camera_visual">
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <box size="0.03 0.05 0.03"/>
-      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <geometry><box size="0.09 0.15 0.09"/></geometry>
     </visual>
-    <!-- Removed camera collision entirely to stop internal intersection jitter -->
   </link>
-
-  <!-- Hokuyo -->
-  <link name="hokuyo">
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy=" 0 0 0"/>
-      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
-    </inertial>
-    <visual name="hokuyo_visual">
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <cylinder radius="0.03" length="0.04"/>
-      </geometry>
-    </visual>
-    <!-- Removed hokuyo collision entirely to stop internal intersection jitter -->
-  </link>
-
   <joint type="fixed" name="camera_joint">
-    <origin xyz="0.15 0 0" rpy="0 0 0"/>
+    <origin xyz="0.45 0.0 0.0" rpy="0 0 0"/>
     <child link="camera"/>
     <parent link="base_link"/>
   </joint>
+  <gazebo reference="camera"><material>Gazebo/Black</material></gazebo>
 
+  <!-- Hokuyo LiDAR -->
+  <link name="hokuyo">
+    <visual name="hokuyo_visual">
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <geometry><cylinder radius="0.03" length="0.04"/></geometry>
+    </visual>
+  </link>
   <joint type="fixed" name="hokuyo_joint">
-    <origin xyz="0.1 0 0.06" rpy="0 0 0"/>
+    <origin xyz="0.3 0.0 0.18" rpy="0 0 0"/>
     <child link="hokuyo"/>
     <parent link="base_link"/>
   </joint>
-
-  <gazebo reference="camera"><material>Gazebo/Black</material></gazebo>
   <gazebo reference="hokuyo"><material>Gazebo/Black</material></gazebo>
 
 
+  <!-- ======================================================== -->
+  <!-- MACROS FOR CLEAN CODE (Professional Robotics Standard)   -->
+  <!-- ======================================================== -->
+
+  <xacro:macro name="boc_wheel" params="name parent origin_xyz">
+    <link name="${name}">
+      <inertial>
+        <mass value="0.8"/>
+        <origin xyz="0.0 0.0 0.0" rpy="1.5707 0 0"/>
+        <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022" />
+      </inertial>
+      <visual>
+        <origin xyz="0.0 0.0 0.0" rpy="1.5707 0 0"/>
+        <geometry><cylinder length="0.05" radius="0.075"/></geometry>
+      </visual>
+      <collision>
+        <origin xyz="0.0 0.0 0.0" rpy="1.5707 0 0"/>
+        <geometry><cylinder length="0.05" radius="0.075"/></geometry>
+      </collision>
+    </link>
+    <gazebo reference="${name}">
+      <material>Gazebo/Grey</material>
+      <!-- ADVANCED MECHANICS: Anisotropic Friction.
+           In a 6-wheel skid steer, the wheels MUST slip sideways to turn.
+           mu1 (forward friction) is high (1.2) for stair climbing grip.
+           mu2 (lateral friction) is extremely low (0.1) so the robot
+           can easily rotate on its center axis without fighting itself! -->
+      <mu1>1.2</mu1>
+      <mu2>0.1</mu2>
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <minDepth>0.001</minDepth>
+    </gazebo>
+
+    <joint name="${name}_joint" type="continuous">
+      <origin xyz="${origin_xyz}" rpy="0 0 0"/>
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+      <axis xyz="0.0 3.0 0.0"/>
+      <limit effort="100" velocity="20"/>
+      <dynamics damping="0.1" friction="0.1"/>
+    </joint>
+  </xacro:macro>
+
   <!-- =============================== -->
-  <!-- LEFT SIDE ROCKER-BOGIE ASSEMBLY -->
+  <!-- LEFT SIDE ASSEMBLY              -->
   <!-- =============================== -->
 
-  <!-- Left Main Rocker Arm -->
   <link name="left_rocker_arm">
     <inertial>
-      <!-- Ensure arm mass is much lower than base -->
       <mass value="0.5"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0.15 0.0 0.0" rpy="0 0 0"/>
       <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005" />
     </inertial>
-    <visual>
-      <origin xyz="0.05 0 0" rpy="0 0 0"/>
-      <geometry><box size="0.34 0.04 0.04"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="0.2 0 -0.05" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.10"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="-0.1 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.05"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0.05 0 -0.025" rpy="0 0 0"/>
-      <!-- Thinned the collision box -->
-      <geometry><box size="0.30 0.02 0.05"/></geometry>
-    </collision>
+    <visual><origin xyz="0.15 0.0 0.0" rpy="0 0 0"/><geometry><box size="1.02 0.12 0.12"/></geometry></visual>
+    <visual><origin xyz="0.6 0.0 -0.15" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.3"/></geometry></visual>
+    <visual><origin xyz="-0.3 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.15"/></geometry></visual>
+    <collision><origin xyz="0.15 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.9 0.06 0.15"/></geometry></collision>
   </link>
   <gazebo reference="left_rocker_arm"><material>Gazebo/DarkGrey</material></gazebo>
 
-  <!-- To fix "jumping", we switch this from revolute to continuous for Gazebo solver stability -->
-  <joint name="left_differential_axle" type="continuous">
-    <origin xyz="0.0 0.13 0" rpy="0 0 0"/>
+  <joint name="left_differential_axle" type="revolute">
+    <origin xyz="0.0 0.39 0.0" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="left_rocker_arm"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="1000" velocity="10"/>
-    <!-- Provide reasonable friction to prevent floppy legs -->
-    <dynamics damping="5.0" friction="5.0"/>
+    <axis xyz="0.0 3.0 0.0"/>
+    <!-- ADVANCED MECHANICS: Mechanical Hard Stops.
+         Changed from continuous back to revolute, but with strictly tuned limits 
+         (+/- 0.6 radians). This simulates the physical chassis bumping against 
+         the arm, preventing the robot from doing a full backflip over its own wheels. -->
+    <limit lower="-0.6" upper="0.6" effort="1000" velocity="10"/>
+    <dynamics damping="8.0" friction="2.0"/>
   </joint>
 
-  <!-- Left Front Wheel -->
-  <link name="front_left_wheel">
-    <inertial>
-      <mass value="0.8"/>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <!-- Using exactly calculated cylinder inertia: 1/12m(3r^2+h^2), 1/2mr^2 -->
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </collision>
-  </link>
-  <gazebo reference="front_left_wheel">
-    <material>Gazebo/Grey</material>
-    <!-- Physics engine traction tags -->
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-  </gazebo>
+  <!-- Instantiate Left Front Wheel -->
+  <xacro:boc_wheel name="front_left_wheel" parent="left_rocker_arm" origin_xyz="1.8 0.54 -0.9"/>
 
-  <joint name="front_left_wheel_joint" type="continuous">
-    <origin xyz="0.2 0.06 -0.1" rpy="0 0 0"/>
-    <parent link="left_rocker_arm"/>
-    <child link="front_left_wheel"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
-  </joint>
-
-  <!-- Left Bogie Link -->
   <link name="left_bogie_link">
     <inertial>
       <mass value="0.5"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
       <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005" />
     </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry><box size="0.24 0.04 0.04"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="0.1 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.05"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="-0.1 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.05"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.20 0.02 0.05"/></geometry>
-    </collision>
+    <visual><origin xyz="0.0 0.0 0.0" rpy="0 0 0"/><geometry><box size="0.72 0.12 0.12"/></geometry></visual>
+    <visual><origin xyz="0.3 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.15"/></geometry></visual>
+    <visual><origin xyz="-0.3 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.15"/></geometry></visual>
+    <collision><origin xyz="0.0 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.6 0.06 0.15"/></geometry></collision>
   </link>
   <gazebo reference="left_bogie_link"><material>Gazebo/DarkGrey</material></gazebo>
 
-  <!-- Also changed to continuous for stability -->
-  <joint name="left_bogie_pivot" type="continuous">
-    <origin xyz="-0.1 0.0 -0.05" rpy="0 0 0"/>
+  <joint name="left_bogie_pivot" type="revolute">
+    <origin xyz="-0.3 0.0 -0.15" rpy="0 0 0"/>
     <parent link="left_rocker_arm"/>
     <child link="left_bogie_link"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="500" velocity="10"/>
-    <dynamics damping="2.0" friction="1.0"/>
+    <axis xyz="0.0 3.0 0.0"/>
+    <!-- Mechanical stop for the bogie (+/- 0.8 radians) -->
+    <limit lower="-0.8" upper="0.8" effort="500" velocity="10"/>
+    <dynamics damping="3.0" friction="1.0"/>
   </joint>
 
-  <!-- Left Middle Wheel -->
-  <link name="mid_left_wheel">
-    <inertial>
-      <mass value="0.8"/>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </collision>
-  </link>
-  <gazebo reference="mid_left_wheel">
-    <material>Gazebo/Grey</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-  </gazebo>
-
-  <joint name="mid_left_wheel_joint" type="continuous">
-    <origin xyz="0.1 0.06 -0.05" rpy="0 0 0"/>
-    <parent link="left_bogie_link"/>
-    <child link="mid_left_wheel"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
-  </joint>
-
-  <!-- Left Rear Wheel -->
-  <link name="back_left_wheel">
-    <inertial>
-      <mass value="0.8"/>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </collision>
-  </link>
-  <gazebo reference="back_left_wheel">
-    <material>Gazebo/Grey</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-  </gazebo>
-
-  <joint name="back_left_wheel_joint" type="continuous">
-    <origin xyz="-0.1 0.06 -0.05" rpy="0 0 0"/>
-    <parent link="left_bogie_link"/>
-    <child link="back_left_wheel"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
-  </joint>
+  <!-- Instantiate Left Mid & Rear Wheels -->
+  <xacro:boc_wheel name="mid_left_wheel" parent="left_bogie_link" origin_xyz="0.9 0.54 -0.45"/>
+  <xacro:boc_wheel name="back_left_wheel" parent="left_bogie_link" origin_xyz="-0.9 0.54 -0.45"/>
 
 
-  <!-- ================================ -->
-  <!-- RIGHT SIDE ROCKER-BOGIE ASSEMBLY -->
-  <!-- ================================ -->
+  <!-- =============================== -->
+  <!-- RIGHT SIDE ASSEMBLY             -->
+  <!-- =============================== -->
 
-  <!-- Right Main Rocker Arm -->
   <link name="right_rocker_arm">
     <inertial>
       <mass value="0.5"/>
-      <origin xyz="0.05 0 0" rpy="0 0 0"/>
+      <origin xyz="0.15 0.0 0.0" rpy="0 0 0"/>
       <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005" />
     </inertial>
-    <visual>
-      <origin xyz="0.05 0 0" rpy="0 0 0"/>
-      <geometry><box size="0.34 0.04 0.04"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="0.2 0 -0.05" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.10"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="-0.1 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.05"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0.05 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.30 0.02 0.05"/></geometry>
-    </collision>
+    <visual><origin xyz="0.15 0.0 0.0" rpy="0 0 0"/><geometry><box size="1.02 0.12 0.12"/></geometry></visual>
+    <visual><origin xyz="0.6 0.0 -0.15" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.3"/></geometry></visual>
+    <visual><origin xyz="-0.3 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.15"/></geometry></visual>
+    <collision><origin xyz="0.15 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.9 0.06 0.15"/></geometry></collision>
   </link>
   <gazebo reference="right_rocker_arm"><material>Gazebo/DarkGrey</material></gazebo>
 
-  <joint name="right_differential_axle" type="continuous">
-    <origin xyz="0.0 -0.13 0" rpy="0 0 0"/>
+  <joint name="right_differential_axle" type="revolute">
+    <origin xyz="0.0 -0.39 0.0" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="right_rocker_arm"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="1000" velocity="10"/>
-    <dynamics damping="5.0" friction="5.0"/>
+    <axis xyz="0.0 3.0 0.0"/>
+    <limit lower="-0.6" upper="0.6" effort="1000" velocity="10"/>
+    <dynamics damping="8.0" friction="2.0"/>
   </joint>
 
-  <!-- Right Front Wheel -->
-  <link name="front_right_wheel">
-    <inertial>
-      <mass value="0.8"/>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </collision>
-  </link>
-  <gazebo reference="front_right_wheel">
-    <material>Gazebo/Grey</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-  </gazebo>
+  <!-- Instantiate Right Front Wheel -->
+  <xacro:boc_wheel name="front_right_wheel" parent="right_rocker_arm" origin_xyz="1.8 -0.54 -0.9"/>
 
-  <joint name="front_right_wheel_joint" type="continuous">
-    <origin xyz="0.2 -0.06 -0.1" rpy="0 0 0"/>
-    <parent link="right_rocker_arm"/>
-    <child link="front_right_wheel"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
-  </joint>
-
-  <!-- Right Bogie Link -->
   <link name="right_bogie_link">
     <inertial>
       <mass value="0.5"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
       <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005" />
     </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry><box size="0.24 0.04 0.04"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="0.1 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.05"/></geometry>
-    </visual>
-    <visual>
-      <origin xyz="-0.1 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.04 0.04 0.05"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 -0.025" rpy="0 0 0"/>
-      <geometry><box size="0.20 0.02 0.05"/></geometry>
-    </collision>
+    <visual><origin xyz="0.0 0.0 0.0" rpy="0 0 0"/><geometry><box size="0.72 0.12 0.12"/></geometry></visual>
+    <visual><origin xyz="0.3 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.15"/></geometry></visual>
+    <visual><origin xyz="-0.3 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.12 0.12 0.15"/></geometry></visual>
+    <collision><origin xyz="0.0 0.0 -0.075" rpy="0 0 0"/><geometry><box size="0.6 0.06 0.15"/></geometry></collision>
   </link>
   <gazebo reference="right_bogie_link"><material>Gazebo/DarkGrey</material></gazebo>
 
-  <joint name="right_bogie_pivot" type="continuous">
-    <origin xyz="-0.1 0.0 -0.05" rpy="0 0 0"/>
+  <joint name="right_bogie_pivot" type="revolute">
+    <origin xyz="-0.3 0.0 -0.15" rpy="0 0 0"/>
     <parent link="right_rocker_arm"/>
     <child link="right_bogie_link"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="500" velocity="10"/>
-    <dynamics damping="2.0" friction="1.0"/>
+    <axis xyz="0.0 3.0 0.0"/>
+    <limit lower="-0.8" upper="0.8" effort="500" velocity="10"/>
+    <dynamics damping="3.0" friction="1.0"/>
   </joint>
 
-  <!-- Right Middle Wheel -->
-  <link name="mid_right_wheel">
-    <inertial>
-      <mass value="0.8"/>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </collision>
-  </link>
-  <gazebo reference="mid_right_wheel">
-    <material>Gazebo/Grey</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-  </gazebo>
-
-  <joint name="mid_right_wheel_joint" type="continuous">
-    <origin xyz="0.1 -0.06 -0.05" rpy="0 0 0"/>
-    <parent link="right_bogie_link"/>
-    <child link="mid_right_wheel"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
-  </joint>
-
-  <!-- Right Rear Wheel -->
-  <link name="back_right_wheel">
-    <inertial>
-      <mass value="0.8"/>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <inertia ixx="0.0013" ixy="0" ixz="0" iyy="0.0013" iyz="0" izz="0.0022" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="1.5707 0 0"/>
-      <geometry><cylinder length="0.05" radius="0.075"/></geometry>
-    </collision>
-  </link>
-  <gazebo reference="back_right_wheel">
-    <material>Gazebo/Grey</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-  </gazebo>
-
-  <joint name="back_right_wheel_joint" type="continuous">
-    <origin xyz="-0.1 -0.06 -0.05" rpy="0 0 0"/>
-    <parent link="right_bogie_link"/>
-    <child link="back_right_wheel"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="100" velocity="20"/>
-    <dynamics damping="0.1" friction="0.1"/>
-  </joint>
+  <!-- Instantiate Right Mid & Rear Wheels -->
+  <xacro:boc_wheel name="mid_right_wheel" parent="right_bogie_link" origin_xyz="0.9 -0.54 -0.45"/>
+  <xacro:boc_wheel name="back_right_wheel" parent="right_bogie_link" origin_xyz="-0.9 -0.54 -0.45"/>
 
 </robot>

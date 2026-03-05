@@ -77,7 +77,7 @@ def main(args=None):
     settings = termios.tcgetattr(sys.stdin)
     node = Teleop()
 
-    speed = 1.2  # Max linear speed
+    speed = 3.6  # Max linear speed
     turn = 2.0   # Max angular speed
     
     current_x = 0.0
@@ -86,7 +86,7 @@ def main(args=None):
     target_th = 0.0
     
     # Acceleration factors (how fast it reaches target speed)
-    accel_x = 0.08
+    accel_x = 0.24
     accel_th = 0.15
     decel_x = 0.1
     decel_th = 0.2

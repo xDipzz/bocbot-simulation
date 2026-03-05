@@ -2,7 +2,7 @@
   <world name='default'>
     <!-- Lighting -->
     <light name='sun' type='directional'>
-      <cast_shadows>1</cast_shadows>
+      <cast_shadows>0</cast_shadows>
       <pose>0 0 15 0 -0 0</pose>
       <diffuse>0.95 0.95 0.95 1</diffuse>
       <specular>0.3 0.3 0.3 1</specular>
