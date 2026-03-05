@@ -1,0 +1,14 @@
+# ROS 2 Build directories
+bocbot_ws/build/
+bocbot_ws/install/
+bocbot_ws/log/
+
+# Original downloaded reference (we don't need to track this if it's just reference)
+basic_bocbot/
+
+# Mac / OS files
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
