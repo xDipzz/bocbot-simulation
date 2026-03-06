@@ -18,7 +18,7 @@ def generate_launch_description():
     return LaunchDescription([
         # start gazebo, notice we are using libgazebo_ros_factory.so instead of libgazebo_ros_init.so
         ExecuteProcess(
-            cmd=['gazebo', '--verbose', world, '-s', 'libgazebo_ros_factory.so'],
+            cmd=['gazebo', '--verbose', world, '-s', 'libgazebo_ros_factory.so', '-s', 'libgazebo_ros_state.so'],
             output='screen'),
 
         # tell gazebo to spawn your robot in the world by using the spawn_entity node
