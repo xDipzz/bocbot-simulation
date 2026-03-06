@@ -29,7 +29,6 @@
 
       <robot_base_frame>robot_footprint</robot_base_frame>
       <max_wheel_torque>50</max_wheel_torque>
-      <max_wheel_acceleration>5.0</max_wheel_acceleration>
 
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
