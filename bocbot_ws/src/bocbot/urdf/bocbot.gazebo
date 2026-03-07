@@ -5,7 +5,9 @@
   <gazebo>
     <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_diff_drive.so">
       <ros>
-        <!-- Removed namespace and remappings to use global /cmd_vel -->
+        <namespace>/</namespace>
+        <argument>cmd_vel:=cmd_vel</argument>
+        <argument>odom:=odom</argument>
       </ros>
       <update_rate>100.0</update_rate>
       

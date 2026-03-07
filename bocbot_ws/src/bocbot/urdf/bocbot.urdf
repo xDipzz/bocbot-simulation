@@ -8,7 +8,9 @@
   <gazebo>
     <plugin filename="libgazebo_ros_diff_drive.so" name="skid_steer_drive_controller">
       <ros>
-        <!-- Removed namespace and remappings to use global /cmd_vel -->
+        <namespace>/</namespace>
+        <argument>cmd_vel:=cmd_vel</argument>
+        <argument>odom:=odom</argument>
       </ros>
       <update_rate>100.0</update_rate>
       <!-- 3 pairs of wheels -->
@@ -285,8 +287,9 @@
     <!-- Optimized for massive rover turning -->
     <mu1>1.5</mu1>
     <mu2>0.02</mu2>
-    <fdir1>1 0 0</fdir1>
     <!-- Almost zero lateral friction to allow easy pivot -->
+    <fdir1>1 0 0</fdir1>
+    <!-- Align primary friction with wheel roll direction -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
   </gazebo>
@@ -352,8 +355,9 @@
     <!-- Optimized for massive rover turning -->
     <mu1>1.5</mu1>
     <mu2>0.02</mu2>
-    <fdir1>1 0 0</fdir1>
     <!-- Almost zero lateral friction to allow easy pivot -->
+    <fdir1>1 0 0</fdir1>
+    <!-- Align primary friction with wheel roll direction -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
   </gazebo>
@@ -389,8 +393,9 @@
     <!-- Optimized for massive rover turning -->
     <mu1>1.5</mu1>
     <mu2>0.02</mu2>
-    <fdir1>1 0 0</fdir1>
     <!-- Almost zero lateral friction to allow easy pivot -->
+    <fdir1>1 0 0</fdir1>
+    <!-- Align primary friction with wheel roll direction -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
   </gazebo>
@@ -459,8 +464,9 @@
     <!-- Optimized for massive rover turning -->
     <mu1>1.5</mu1>
     <mu2>0.02</mu2>
-    <fdir1>1 0 0</fdir1>
     <!-- Almost zero lateral friction to allow easy pivot -->
+    <fdir1>1 0 0</fdir1>
+    <!-- Align primary friction with wheel roll direction -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
   </gazebo>
@@ -526,8 +532,9 @@
     <!-- Optimized for massive rover turning -->
     <mu1>1.5</mu1>
     <mu2>0.02</mu2>
-    <fdir1>1 0 0</fdir1>
     <!-- Almost zero lateral friction to allow easy pivot -->
+    <fdir1>1 0 0</fdir1>
+    <!-- Align primary friction with wheel roll direction -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
   </gazebo>
@@ -563,8 +570,9 @@
     <!-- Optimized for massive rover turning -->
     <mu1>1.5</mu1>
     <mu2>0.02</mu2>
-    <fdir1>1 0 0</fdir1>
     <!-- Almost zero lateral friction to allow easy pivot -->
+    <fdir1>1 0 0</fdir1>
+    <!-- Align primary friction with wheel roll direction -->
     <kp>1000000.0</kp>
     <kd>100.0</kd>
   </gazebo>

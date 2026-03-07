@@ -63,4 +63,9 @@ install(DIRECTORY launch
 install(DIRECTORY src
   DESTINATION share/${PROJECT_NAME})
 
+install(PROGRAMS
+  src/teleop_wasd.py
+  src/autonomous_tour.py
+  DESTINATION lib/${PROJECT_NAME})
+
 ament_package()
