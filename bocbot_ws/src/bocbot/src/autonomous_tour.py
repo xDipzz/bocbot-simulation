@@ -293,8 +293,9 @@ class TourNode(Node):
     MAP_PERIOD = 0.8      # seconds between local map publishes
 
     # -- Stuck detection --
-    STUCK_TIME = 1.6     # seconds without meaningful movement
-    STUCK_DIST = 0.035   # minimum displacement to reset stuck timer
+    STUCK_TIME = 6.0     # seconds without meaningful movement
+    STUCK_DIST = 0.12    # minimum displacement to reset stuck timer
+    STUCK_SPEED_MIN = 0.18
 
     # -- Obstacle handling --
     FRONT_STOP = 0.55
@@ -776,7 +777,14 @@ class TourNode(Node):
             return
 
         moved = math.hypot(self.x - self.last_progress_x, self.y - self.last_progress_y)
-        moving_intent = abs(speed) > 0.08
+        moving_intent = abs(speed) > self.STUCK_SPEED_MIN
+
+        if moved >= self.STUCK_DIST:
+            self.no_progress_time = 0.0
+            self.last_progress_time = now
+            self.last_progress_x = self.x
+            self.last_progress_y = self.y
+            return
 
         if moving_intent and moved < self.STUCK_DIST:
             self.no_progress_time += dt
@@ -786,7 +794,7 @@ class TourNode(Node):
         else:
             self.no_progress_time = 0.0
 
-        if dt >= self.STUCK_TIME:
+        if not moving_intent:
             self.last_progress_time = now
             self.last_progress_x = self.x
             self.last_progress_y = self.y
