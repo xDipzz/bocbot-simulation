@@ -67,7 +67,7 @@ def normalize_key_char(char):
 
 
 def set_cbreak_noecho(fd, settings):
-    attrs = termios.tcgetattr(fd)
+    attrs = list(settings)
     attrs[3] &= ~(termios.ICANON | termios.ECHO)
     attrs[6][termios.VMIN] = 0
     attrs[6][termios.VTIME] = 0
@@ -481,6 +481,9 @@ def main(args=None):
 
             rclpy.spin_once(node, timeout_sec=0)
             last_keys = keys.copy()
+
+            # Cap loop at ~50 Hz to prevent CPU-heavy busy spinning
+            time.sleep(0.02)
 
     except KeyboardInterrupt:
         log.info('KeyboardInterrupt received -> shutting down')

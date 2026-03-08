@@ -3,7 +3,11 @@
 set -euo pipefail
 
 # Allow local X11 connections for GUI apps (Gazebo)
-xhost +local:
+if command -v xhost &>/dev/null && [ -n "${DISPLAY:-}" ]; then
+    xhost +local:
+else
+    echo "[WARN] No X11 display or xhost not found — skipping xhost setup"
+fi
 
 docker_args=(
     -it

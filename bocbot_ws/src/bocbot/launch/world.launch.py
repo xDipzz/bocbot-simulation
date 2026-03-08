@@ -2,7 +2,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, RegisterEventHandler
+from launch.actions import ExecuteProcess, LogInfo, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch_ros.actions import Node
 
@@ -26,6 +26,13 @@ def generate_launch_description():
         output='screen'
     )
 
+    def _on_spawn_exit(event, context):
+        """Only start teleop if spawn_entity succeeded (exit code 0)."""
+        if event.returncode == 0:
+            return [teleop]
+        return [LogInfo(msg='spawn_entity failed (exit {}) — teleop not started'.format(
+            event.returncode))]
+
     # create and return launch description object
     return LaunchDescription([
         # start gazebo, notice we are using libgazebo_ros_factory.so instead of libgazebo_ros_init.so
@@ -36,11 +43,11 @@ def generate_launch_description():
         # tell gazebo to spawn your robot in the world by using the spawn_entity node
         spawn_entity,
 
-        # Start teleop after spawn_entity exits to reduce false startup warnings.
+        # Start teleop only if spawn_entity exits successfully.
         RegisterEventHandler(
             OnProcessExit(
                 target_action=spawn_entity,
-                on_exit=[teleop],
+                on_exit=_on_spawn_exit,
             )
         ),
     ])
