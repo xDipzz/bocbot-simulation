@@ -341,6 +341,7 @@ class TourNode(Node):
         self.last_progress_y = self.y
         self.no_progress_time = 0.0
         self._last_status = 0.0
+        self._last_scan_status = 0.0
         self._recovery_start = 0.0
         self._recovery_turn = 1.0
 
@@ -407,10 +408,10 @@ class TourNode(Node):
                 'Waiting for /odom ...', throttle_duration_sec=2.0)
             return
 
-        if not scan_fresh and now - self._last_status >= 2.0:
+        if not scan_fresh and now - self._last_scan_status >= 2.0:
             self.get_logger().warn(
-                'Lidar stale / unavailable. Continuing with fallback obstacle handling.')
-            self._last_status = now
+                'Lidar stale / unavailable. Continuing with reduced autonomy.')
+            self._last_scan_status = now
 
         # Odom watchdog
         if now - self._odom_t > 1.0:
@@ -457,7 +458,7 @@ class TourNode(Node):
             self._in_bridge = False
             self.get_logger().info('--- EXITED BRIDGE SECTION ---')
 
-        if self.state in ('BACKUP', 'TURN'):
+        if self.state == 'BACKUP':
             self._execute_recovery(now)
             return
 
@@ -487,6 +488,24 @@ class TourNode(Node):
         elif self.state == 'DRIVE':
             if dist < tol:
                 self._go('ARRIVE')
+                return
+
+            if not scan_fresh:
+                if now - self._last_status >= 1.0:
+                    self.get_logger().warn(
+                        'Lidar stale / unavailable. Holding linear speed at 0 m/s.')
+                    self._last_status = now
+                rw = self.apid(herr, dt)
+                vo, wo = self.prof(0.0, rw, dt)
+                self._cmd(0.0, wo)
+                if now - self.last_log_t > 2.0:
+                    self.last_log_t = now
+                    elapsed = now - self.tour_start
+                    self.get_logger().info(
+                        f'  [{self.wi+1}/{len(self.wps)}] {name} (no lidar): '
+                        f'd={dist:.2f}m h={math.degrees(herr):.1f}deg '
+                        f'v={vo:.2f} w={wo:.2f}  T+{elapsed:.0f}s')
+                self._check_progress(now, 0.0, left_clear, right_clear)
                 return
 
             # Re-align on large heading drift (skip on bridge stairs)
@@ -672,7 +691,7 @@ class TourNode(Node):
         return best
 
     def _avoid_turn(self, left_clear, right_clear, front_clear):
-        if self.scan is None:
+        if self.scan is None or not self._scan_fresh(time.monotonic()):
             return 0.0
 
         left_blocked = left_clear < self.SIDE_WARN
@@ -699,7 +718,7 @@ class TourNode(Node):
         self.last_progress_time = self._recovery_start
         self.last_progress_x = self.x
         self.last_progress_y = self.y
-        self._recovery_turn = -1.0 if left_clear > right_clear else 1.0
+        self._recovery_turn = 1.0 if left_clear > right_clear else -1.0
         self.prof.reset()
         self.get_logger().warn(
             f'Recovery triggered: front={front_clear:.2f}, left={left_clear:.2f}, right={right_clear:.2f}'
