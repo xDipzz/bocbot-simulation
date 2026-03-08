@@ -316,7 +316,15 @@ class TourNode(Node):
         self.create_subscription(
             Odometry, '/odom', self._odom_cb, qos_profile=qos_profile_sensor_data)
         self.create_subscription(
-            LaserScan, '/bocbot/scan', self._scan_cb, qos_profile_sensor_data)
+            LaserScan, '/bocbot/scan', self._scan_cb_bocbot, qos_profile_sensor_data)
+        self.create_subscription(
+            LaserScan, '/scan', self._scan_cb_scan, qos_profile_sensor_data)
+        self.create_subscription(
+            LaserScan, '/bocbot/gazebo_ros_head_hokuyo_controller/out',
+            self._scan_cb_plugin_namespaced, qos_profile_sensor_data)
+        self.create_subscription(
+            LaserScan, '/gazebo_ros_head_hokuyo_controller/out',
+            self._scan_cb_plugin_global, qos_profile_sensor_data)
 
         # Odometry state
         self.x = self.y = self.yaw = 0.0
@@ -325,6 +333,8 @@ class TourNode(Node):
         self.scan = None
         self.scan_received = False
         self.scan_time = None
+        self.scan_topic = None
+        self._last_scan_topic_log = 0.0
 
         # Local occupancy map
         self.map_resolution = 0.15
@@ -391,11 +401,32 @@ class TourNode(Node):
 
     # -- Main control loop --
 
-    def _scan_cb(self, msg):
+    def _scan_cb(self, msg, topic):
+        if self.scan_topic != topic and time.monotonic() - self._last_scan_topic_log >= 1.0:
+            if self.scan_topic is None:
+                self.get_logger().info(f'Using lidar source: {topic}')
+            else:
+                self.get_logger().info(
+                    f'Switching lidar source: {self.scan_topic} -> {topic}')
+            self.scan_topic = topic
+            self._last_scan_topic_log = time.monotonic()
+
         self.scan = msg
         self.scan_received = True
         self.scan_time = time.monotonic()
         self._update_local_map(msg)
+
+    def _scan_cb_scan(self, msg):
+        self._scan_cb(msg, '/scan')
+
+    def _scan_cb_bocbot(self, msg):
+        self._scan_cb(msg, '/bocbot/scan')
+
+    def _scan_cb_plugin_namespaced(self, msg):
+        self._scan_cb(msg, '/bocbot/gazebo_ros_head_hokuyo_controller/out')
+
+    def _scan_cb_plugin_global(self, msg):
+        self._scan_cb(msg, '/gazebo_ros_head_hokuyo_controller/out')
 
     def _tick(self):
         now = time.monotonic()
@@ -410,7 +441,7 @@ class TourNode(Node):
 
         if not scan_fresh and now - self._last_scan_status >= 2.0:
             self.get_logger().warn(
-                'Lidar stale / unavailable: holding linear speed at 0 m/s and using reduced autonomy.')
+                'Lidar stale / unavailable: running degraded mode while waiting for a live scan topic.')
             self._last_scan_status = now
 
         # Odom watchdog
@@ -492,8 +523,11 @@ class TourNode(Node):
 
             if not scan_fresh:
                 rw = self.apid(herr, dt)
-                vo, wo = self.prof(0.0, rw, dt)
-                self._cmd(0.0, wo)
+                rv = min(vmax, 0.25 if not self.scan_received else 0.18)
+                if dist < self.DECEL_R:
+                    rv *= smoothstep(dist / self.DECEL_R)
+                vo, wo = self.prof(rv, rw, dt)
+                self._cmd(vo, wo)
                 if now - self.last_log_t > 2.0:
                     self.last_log_t = now
                     elapsed = now - self.tour_start
@@ -501,7 +535,7 @@ class TourNode(Node):
                         f'  [{self.wi+1}/{len(self.wps)}] {name} (no lidar): '
                         f'd={dist:.2f}m h={math.degrees(herr):.1f}deg '
                         f'v={vo:.2f} w={wo:.2f}  T+{elapsed:.0f}s')
-                self._check_progress(now, 0.0, left_clear, right_clear)
+                self._check_progress(now, vo, left_clear, right_clear)
                 return
 
             # Re-align on large heading drift (skip on bridge stairs)
