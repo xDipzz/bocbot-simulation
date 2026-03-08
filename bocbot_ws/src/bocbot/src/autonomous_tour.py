@@ -293,8 +293,9 @@ class TourNode(Node):
     MAP_PERIOD = 0.8      # seconds between local map publishes
 
     # -- Stuck detection --
-    STUCK_TIME = 1.6     # seconds without meaningful movement
-    STUCK_DIST = 0.035   # minimum displacement to reset stuck timer
+    STUCK_TIME = 6.0     # seconds without meaningful movement
+    STUCK_DIST = 0.12    # minimum displacement to reset stuck timer
+    STUCK_SPEED_MIN = 0.18
 
     # -- Obstacle handling --
     FRONT_STOP = 0.55
@@ -441,7 +442,7 @@ class TourNode(Node):
 
         if not scan_fresh and now - self._last_scan_status >= 2.0:
             self.get_logger().warn(
-                'Lidar stale / unavailable: running degraded mode while waiting for a live scan topic.')
+                'Lidar stale / unavailable: holding linear speed at 0 m/s while waiting for a live scan topic.')
             self._last_scan_status = now
 
         # Odom watchdog
@@ -523,11 +524,8 @@ class TourNode(Node):
 
             if not scan_fresh:
                 rw = self.apid(herr, dt)
-                rv = min(vmax, 0.25 if not self.scan_received else 0.18)
-                if dist < self.DECEL_R:
-                    rv *= smoothstep(dist / self.DECEL_R)
-                vo, wo = self.prof(rv, rw, dt)
-                self._cmd(vo, wo)
+                vo, wo = self.prof(0.0, rw, dt)
+                self._cmd(0.0, wo)
                 if now - self.last_log_t > 2.0:
                     self.last_log_t = now
                     elapsed = now - self.tour_start
@@ -776,20 +774,24 @@ class TourNode(Node):
             return
 
         moved = math.hypot(self.x - self.last_progress_x, self.y - self.last_progress_y)
-        moving_intent = abs(speed) > 0.08
+        moving_intent = abs(speed) > self.STUCK_SPEED_MIN
 
-        if moving_intent and moved < self.STUCK_DIST:
+        if moved >= self.STUCK_DIST:
+            self.no_progress_time = 0.0
+            self.last_progress_x = self.x
+            self.last_progress_y = self.y
+
+        elif moving_intent:
             self.no_progress_time += dt
             if self.no_progress_time > self.STUCK_TIME:
                 self._start_recovery(front_clear=10.0, left_clear=left_clear, right_clear=right_clear)
                 return
         else:
             self.no_progress_time = 0.0
-
-        if dt >= self.STUCK_TIME:
-            self.last_progress_time = now
             self.last_progress_x = self.x
             self.last_progress_y = self.y
+
+        self.last_progress_time = now
 
     def _publish_local_map(self):
         msg = OccupancyGrid()
